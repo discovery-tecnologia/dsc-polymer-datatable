@@ -1,0 +1,916 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+
+
+
+<dom-module id="dsc-polymer-datatable">
+
+    <style>
+      :host {
+        display: block;
+        @apply(--shadow-elevation-2dp);
+        @apply(--paper-font-common-base);
+        background: white;
+
+        --app-primary-color: #279DDA;
+        --app-secondary-color: #282d41;
+        --app-accent-color: var(--app-secondary-color);
+        --paper-button-ink-color: var(--app-accent-color);
+        --paper-icon-button-ink-color: var(--app-accent-color);
+        --paper-spinner-color: var(--app-accent-color);
+      }
+
+      #header {
+        height: 64px;
+        display: flex;
+        padding: 0 20px;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+      }
+
+      #header[selection] {
+        background-color: var(--paper-indigo-50);
+      }
+
+      #header #title {
+        font-size: 20px;
+      }
+
+      #header #labelSelection {
+        font-size: 16px;
+        color: var(--paper-indigo-500);
+      }
+
+      #header .tool-bar {
+        margin-left: auto;
+        display: flex;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+      }
+
+      #header .tool-bar div {
+        display: flex;
+      }
+
+      .tool-bar iron-icon,
+      paper-icon-button {
+        color: rgba(0, 0, 0, var(--dark-secondary-opacity));
+      }
+
+      paper-progress {
+        width: 100%;
+      }
+
+      table {
+        width: 100%;
+        border-spacing: 0px;
+      }
+
+      tr td:first-child, tr th:first-child {
+        padding-left: 24px;
+        padding-right: 0px;
+        width: 56px;
+        min-width: 56px;
+      }
+
+      tr td, tr th {
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      tbody tr:last-of-type td {
+        border-bottom: none;
+      }
+
+      tr td {
+        cursor: pointer;
+      }
+
+      tr td, tr th {
+        padding: 6px 28px 6px 28px;
+        box-sizing: border-box;
+      }
+
+      td {
+        height: 48px;
+      }
+
+      th {
+        font-weight: 500;
+        text-align: left;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+        color: rgba(0,0,0, .54);
+        font-size: 12px;
+        transition: linear .1s color, padding-left .2s linear;
+        box-sizing: border-box;
+        height: 56px;
+      }
+
+      th[data-sortable] {
+        cursor: pointer;
+      }
+
+      tr td:nth-of-type(2), tr th:nth-of-type(2) {
+        padding-left: 10px;
+      }
+
+      td.cell {
+        font-size: 13px;
+        color: rgba(0,0,0,.87);
+      }
+
+      tr[data-selected] td {
+        background: #f5f5f5;
+      }
+
+      tr:hover td {
+        background: #eeeeee;
+      }
+
+      th[data-sortable][data-sorted], th[data-sortable]:hover {
+        padding-left: 4px;
+        color: rgba(0,0,0, .87);
+      }
+
+      thead paper-checkbox {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+      }
+
+      table tr.progress th {
+        padding: 0px;
+        height: 1px;
+        border-bottom: 0px;
+      }
+
+      /*checkbox select all*/
+      .partialSelectionContainer {
+        width: 18px;
+        height: 18px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .partialSelection[data-checked] {
+          transform: scale(1) rotate(0deg);
+      }
+      .partialSelection {
+          background: rgba(0,0,0,.54);
+      }
+      .partialSelection {
+        width: 6px;
+        height: 2px;
+        border-radius: 1px;
+        transition: transform .1s linear;
+        transform: scale(0) rotate(-45deg);
+      }
+      /*Order icon*/
+      iron-icon.sort {
+        position: relative;
+        vertical-align: middle;
+        display: -ms-inline-flexbox;
+        display: -webkit-inline-flex;
+        display: inline-flex;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+        -ms-flex-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+        fill: currentcolor;
+        stroke: none;
+        width: 18px;
+        height: 18px;
+      }
+      th[data-sortable] iron-icon.sort {
+        transition: transform .2s linear, width .2s linear, color .2s linear;
+        color: rgba(0,0,0, .26);
+        width: 0px;
+      }
+      th[data-sortable][data-sorted]:not([data-sort-direction='desc']) iron-icon {
+        transform: rotate(180deg);
+      }
+      th[data-sortable][data-sorted] iron-icon.sort {
+        color: rgba(0,0,0, .87);
+      }
+      th[data-sortable][data-sorted] iron-icon, th[data-sortable]:hover iron-icon {
+        width: 18px;
+      }
+
+      td.check{
+        position: relative;
+      }
+
+      .overlay-check {
+        position: absolute;
+        z-index: 10;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+      }
+
+      /* footer */
+      #bottomBlock {
+        border-top: 1px solid #e0e0e0;
+        color: rgba(0,0,0,.54);
+        height: 56px;
+        padding: 0px 6px;
+        align-items: center;
+        font-size: 12px;
+        text-align: center;
+        font-weight: 500;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+      }
+
+      #bottomBlock paper-dropdown-menu {
+        vertical-align: middle;
+        margin-right: 18px;
+        width: 68px;
+        display: inline-block;
+        position: relative;
+        text-align: right;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-tap-highlight-color: transparent;
+
+        /*--paper-input-container-label: {
+          font-size:10px;
+          text-align: right;
+          font-weight: bold;
+        };*/
+
+        --paper-input-container-input: {
+          text-align: right;
+          font-size:12px;
+        }
+
+        --paper-input-container-underline: {
+          visibility:hidden;
+        };
+      }
+    </style>
+
+    <template>
+
+      <div id="header" selection$="[[hasSelection]]">
+        <div hidden$="[[hasSelection]]" id="title">{{title}}</div>
+        <div hidden$="[[! hasSelection]]" id="labelSelection">{{labelSelection}}</div>
+        <div class="tool-bar" hidden$="[[hasSelection]]">
+          <div>
+            <paper-input label="Search..." no-label-float value="{{inputSearch}}">
+              <iron-icon icon="icons:search" prefix></iron-icon>
+            </paper-input>
+            <paper-icon-button icon="icons:refresh" on-click="refresh" title="Refresh data"></paper-icon-button>
+          </div>
+          <content select="#toolBar"></content>
+        </div>
+        <div class="tool-bar" hidden$="[[! hasSelection]]">
+          <div hidden$="[[! hasOneSelection]]">
+            <content select="#toolBarOnOneSelect" ></content>
+          </div>
+          <content select="#toolBarOnSelect"></content>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr id="headHow"></tr>
+          <tr class="progress" hidden$="[[!isLoading]]">
+            <th colspan="5">
+              <paper-progress indeterminate></paper-progress>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="tableContent"></tbody>
+      </table>
+      <div class="horizontal center layout" id="bottomBlock">
+        <div class="flex"></div>
+        <span>Rows per page:</span>
+        <paper-dropdown-menu no-label-float>
+          <paper-menu id="selectLimit" class="dropdown-content" on-iron-select="_handleChangeLimit">
+            <paper-item value="1">1</paper-item>
+            <paper-item value="5">5</paper-item>
+            <paper-item value="10">10</paper-item>
+            <paper-item value="20">20</paper-item>
+            <paper-item value="50">50</paper-item>
+            <paper-item value="100">100</paper-item>
+            <paper-item value="250">250</paper-item>
+            </paper-menu>
+        </paper-dropdown-menu>
+        <span id="paginatorLabel"></span>
+        <paper-icon-button icon="icons:first-page" id="btFirstPage" role="button" tabindex="-1" on-tap="_handleFirstPage"></paper-icon-button>
+        <paper-icon-button icon="icons:chevron-left" id="btPreviousPage" role="button" tabindex="-1" on-tap="_handlePreviousPage"></paper-icon-button>
+        <paper-icon-button icon="icons:chevron-right" id="btNextPage" role="button" tabindex="0" on-tap="_handleNextPage"></paper-icon-button>
+        <paper-icon-button icon="icons:last-page" id="btLastPage" role="button" tabindex="0" on-tap="_handleLastPage"></paper-icon-button>
+      </div>
+
+    </template>
+
+    <script>
+      Polymer({
+        is: 'dsc-polymer-datatable',
+
+        properties: {
+
+          /**
+           * Indicate loadind state to show spinner.
+           */
+          isLoading: {
+            type: Boolean,
+            value: false,
+          },
+
+          /**
+           * Header title.
+           */
+          title: {
+            type: String,
+          },
+
+          /**
+           * Indicates that the rows are selectable.
+           */
+          selectable: {
+            type: Boolean,
+          },
+
+          /**
+           * Current data view.
+           */
+          data: {
+            type: Array,
+            value: [],
+          },
+
+          orderBy: {
+            type: String,
+          },
+
+          orderDirection: {
+            type: String,
+          },
+
+          /**
+           * Current page index. Start at 1.
+           */
+          page: {
+            type: Number,
+          },
+
+          /**
+           * Total of pages.
+           */
+          pages: {
+            type: Number,
+          },
+
+          /**
+           * Total of itens in all pages.
+           */
+          total: {
+            type: Number,
+          },
+
+          /**
+           * Itens by page.
+           */
+          limit: {
+            type: Number,
+            value: null,
+            observer: '_onLimitChange',
+          },
+
+          /**
+           * Value of input search
+           */
+          inputSearch: {
+            type: String,
+            value: null,
+            notify : true,
+            observer : '_onSearchChanged',
+          },
+
+          /**
+           * Search string state.
+           */
+          search: {
+            type: String,
+            value: null,
+          },
+
+          /**
+           * Dinamically generated by 'dsc-columns' content. Ex:
+           * [
+           *   {
+           *     type: "string",
+           *     name: "_id",
+           *     label: "",
+           *     hidden: true,
+           *     sortable: false
+           *   },
+           *   {
+           *     type: "string",
+           *     name: "name",
+           *     label: "Firtst name",
+           *     hidden: false,
+           *     sortable: true
+           *   },
+           *   {
+           *     type: "number"
+           *     name: "age",
+           *     label: "Age",
+           *     hidden: false,
+           *     sortable: true
+           *   }
+           * ]
+           */
+          dataTemplate: {
+            type: Array,
+            value: [],
+          },
+
+          /**
+           * Number of selected rows.
+           */
+          selectedCount: {
+            type: Number,
+            value: 0,
+            observer: '_onSelectedCountChange',
+          },
+
+          /**
+           * Indicate has one or more items selected.
+           */
+          hasSelection: {
+            type: Boolean,
+            value: false,
+          },
+
+          /**
+           * Indicate has one item selected.
+           */
+          hasOneSelection: {
+            type: Boolean,
+            value: false,
+          },
+
+          labelSelection: {
+            type: String,
+          },
+        },
+
+        /**
+         * On inpout search change value.
+         */
+        _onSearchChanged: function() {
+          this.debounce('_onSearchChanged', this._handlesearch, 700);
+        },
+
+        /**
+         * Haldle search event
+         */
+        _handlesearch: function() {
+          if (this.inputSearch !== null && this.inputSearch !== this.search) {
+            this.isLoading = true;
+            this.search = this.inputSearch;
+            // manipule state
+            var state = this._getCurrentState();
+            state.page = 1;
+            state.search = this.inputSearch;
+            // fire event
+            this.fire('datatable-change', state);
+            this._resetSelection();
+          }
+        },
+
+        /**
+         * Observer select count.
+         */
+        _onSelectedCountChange: function() {
+          this.hasSelection = (this.selectedCount > 0);
+          this.hasOneSelection = (this.selectedCount === 1);
+          this.labelSelection = this.selectedCount + ' item selected';
+        },
+
+        /**
+         * Reset selection to zero.
+         */
+        _resetSelection: function() {
+          this.selectedCount = 0;
+        },
+
+        /**
+         * First page paginator buttom handler.
+         */
+        _handleFirstPage: function() {
+          this.isLoading = true;
+          // manipule state
+          var state = this._getCurrentState();
+          state.page = 1;
+          // fire event
+          this.fire('datatable-change', state);
+          this._resetSelection();
+        },
+
+        /**
+         * Previous page paginator buttom handler.
+         */
+        _handlePreviousPage: function() {
+          this.isLoading = true;
+          // manipule state
+          var state = this._getCurrentState();
+          state.page = state.page - 1;
+          // fire event
+          this.fire('datatable-change', state);
+          this._resetSelection();
+        },
+
+        /**
+         * Next page paginator buttom handler.
+         */
+        _handleNextPage: function() {
+          this.isLoading = true;
+          // manipule state
+          var state = this._getCurrentState();
+          state.page = state.page + 1;
+          // fire event
+          this.fire('datatable-change', state);
+          this._resetSelection();
+        },
+
+        /**
+         * Last page paginator buttom handler.
+         */
+        _handleLastPage: function() {
+          this.isLoading = true;
+          // manipule state
+          var state = this._getCurrentState();
+          state.page = this.pages;
+          // fire event
+          this.fire('datatable-change', state);
+          this._resetSelection();
+        },
+
+        /**
+         * Observer all properties of pagination and ajust label and paginator.
+         */
+        _onPaginationChange: function() {
+          // calculate vars
+          if (this.total > 0) {
+            var totalItems = this.total;
+            var currentPage = this.page;
+            var totalPages = this.pages;
+
+            var itemsPerPage = this.limit;
+
+            var firstPageItem = (currentPage - 1) * itemsPerPage + 1;
+
+            if (currentPage === totalPages) {
+              var lastPageItem = totalItems;
+            } else {
+              var lastPageItem = (firstPageItem + itemsPerPage) - 1;
+            }
+            // refresh UI label
+            this.$.paginatorLabel.innerText = firstPageItem + ' - ' + lastPageItem + ' of ' + totalItems;
+            // manipulate buttons
+            if (this.page === 1) {
+              this.$.btFirstPage.setAttribute('disabled', '');
+              this.$.btPreviousPage.setAttribute('disabled', '');
+            } else {
+              this.$.btFirstPage.removeAttribute('disabled', '');
+              this.$.btPreviousPage.removeAttribute('disabled', '');
+            }
+            if (this.page === this.pages) {
+              this.$.btLastPage.setAttribute('disabled', '');
+              this.$.btNextPage.setAttribute('disabled', '');
+            } else {
+              this.$.btLastPage.removeAttribute('disabled', '');
+              this.$.btNextPage.removeAttribute('disabled', '');
+            }
+          }
+        },
+
+        /**
+         * Get current states.
+         */
+        _getCurrentState: function() {
+          return {
+            orderBy: this.orderBy,
+            orderDirection: this.orderDirection,
+            page: this.page,
+            pages: this.pages,
+            total: this.total,
+            limit: this.limit,
+            search: this.search,
+          };
+        },
+
+        _toggleRowSelect: function(row) {
+          var check = Polymer.dom(row).querySelector('paper-checkbox');
+          // toggle checkbox
+          check.checked = ! check.checked;
+          // toggle row selection
+          if (row.getAttribute('data-selected') == '') {
+            row.removeAttribute('data-selected');
+          } else {
+            row.setAttribute('data-selected', '');
+          }
+        },
+
+        /**
+         * Toggle checkbox state on row tap.
+         */
+        _handleHowTap: function(e) {
+          var row = e.currentTarget;
+          this._toggleRowSelect(row);
+          // emmit event
+          this._eventDatatableSelect();
+        },
+
+        /**
+         * Get array of selected items.
+         */
+        _getSelectedItems: function() {
+          var allChecks = Polymer.dom(this.$.tableContent).querySelectorAll('paper-checkbox');
+          var selected = [];
+          for (var i = 0; i < allChecks.length; i++) {
+            if (allChecks[i].checked === true) {
+              selected.push(this.data[i]);
+            }
+          }
+          return selected;
+        },
+
+        /**
+         * Handler of checkbox select/deselect row.
+         */
+        _eventDatatableSelect: function() {
+          var selected = this._getSelectedItems();
+          this.selectedCount = selected.length;
+          // set partial selection on check all
+          var partialSelection = Polymer.dom(this.root).querySelector('.partialSelection');
+          if (this.selectedCount > 0) {
+            partialSelection.setAttribute('data-checked', '');
+          } else {
+            partialSelection.removeAttribute('data-checked');
+          }
+          // emmit event
+          this.fire('datatable-select', selected);
+        },
+
+        /**
+         * On select all checkbox tap.
+         */
+        _handleSelectAll: function(e) {
+          var checkAll = e.currentTarget;
+          var isCheck = checkAll.checked; // state of check all
+
+          var allRows = Polymer.dom(this.$.tableContent).querySelectorAll('tr');
+          for (var i = 0; i < allRows.length; i++) {
+            if (isCheck === true) {
+              allRows[i].setAttribute('data-selected', '');
+            } else {
+              allRows[i].removeAttribute('data-selected', '');
+            }
+            var check = Polymer.dom(allRows[i]).querySelector('paper-checkbox');
+            check.checked = isCheck;
+          }
+          // emmit event
+          this._eventDatatableSelect();
+        },
+
+        /**
+         * Handler of click on header sortable
+         */
+        _handleSort: function(e) {
+          this.isLoading = true;
+          var element = e.currentTarget;
+          var isCurrentSort = (element.getAttribute('data-sorted') === 'true') ? true : false;
+          var currentDirection = element.getAttribute('data-sort-direction'); // asc | desc | null
+          var newDirection = (currentDirection === null || currentDirection === 'desc') ? 'asc' : 'desc';
+          var name = element.getAttribute('data-name');
+          element.setAttribute('data-sort-direction', newDirection);
+          // manipule state
+          var state = this._getCurrentState();
+          state.orderBy = name;
+          state.orderDirection = newDirection;
+          // fire event
+          this.fire('datatable-change', state);
+          this._resetSelection();
+        },
+
+        /**
+         * Observer limit. Change combo value only on firts load.
+         */
+        _onLimitChange: function(newVal, oldVal) {
+          if (oldVal === null) {
+            var index = -1;
+            switch(newVal) {
+              case 1:
+                index = 0;
+                break;
+              case 5:
+                index = 1;
+                break;
+              case 10:
+                index = 2;
+                break;
+              case 20:
+                index = 3;
+                break;
+              case 100:
+                index = 4;
+                break;
+              case 250:
+                index = 5;
+                break;
+            }
+            this.$.selectLimit.selectIndex(index);
+          }
+          this._onPaginationChange();
+        },
+
+        /**
+         * On checkbox limit per page change.
+         */
+        _handleChangeLimit: function() {
+          var value = this.$.selectLimit.selectedItem.getAttribute("value");
+          if (this.limit !== null && this.limit !== parseInt(value)) {
+            this.isLoading = true;
+            // manipule state
+            var state = this._getCurrentState();
+            state.limit = value;
+            state.page = 1;
+            // fire event
+            this.fire('datatable-change', state);
+            this._resetSelection();
+          }
+        },
+
+        /**
+         * Load data template by 'dsc-columns' element content.
+         */
+        _loadDataTemplate: function() {
+          var dataTemplate = [];
+          var rows = Polymer.dom(this).querySelectorAll('dsc-column');
+          for (var i = 0; i < rows.length; i++) {
+            var name = rows[i].getAttribute('name');
+            var label = rows[i].getAttribute('label');
+            var type = rows[i].getAttribute('type');
+            var hidden = (rows[i].getAttribute('hidden') !== null) ? true : false;
+            var sortable = (rows[i].getAttribute('sortable') !== null) ? true : false;
+            dataTemplate.push({
+              name: name,
+              label: label,
+              type: type,
+              hidden: hidden,
+              sortable: sortable
+            });
+          }
+          this.dataTemplate = dataTemplate;
+        },
+
+        /**
+         * Render table head by dsc-columns elements in content.
+         */
+        _renderTableHead: function() {
+          this.$$('#headHow').innerHTML = '';
+          var elRow = document.createElement('tr');
+          for (var i = 0; i < this.dataTemplate.length; i++) {
+            // add checkbox select
+            if (this.selectable === true && i === 0) {
+              var elColFirst = document.createElement('th');
+              // div.partialSelectionContainer
+              var divPartialSelectionContainer = document.createElement('div');
+              divPartialSelectionContainer.setAttribute('class', 'partialSelectionContainer');
+              // div.partialSelection
+              var divPartialSelection = document.createElement('div');
+              divPartialSelection.setAttribute('class', 'partialSelection');
+              // paper-checkbox
+              var elCheck = document.createElement('paper-checkbox');
+              this.listen(elCheck, 'tap', '_handleSelectAll');
+              // append
+              divPartialSelectionContainer.appendChild(divPartialSelection);
+              divPartialSelectionContainer.appendChild(elCheck);
+              elColFirst.appendChild(divPartialSelectionContainer);
+              this.$$('#headHow').appendChild(elColFirst);
+            }
+            // add current column
+            var currentCol = this.dataTemplate[i];
+            if (currentCol.hidden === false) {
+              var elCol = document.createElement('th');
+              if (currentCol.sortable === true) {
+                elCol.setAttribute('data-sortable', '');
+                elCol.setAttribute('data-name', this.dataTemplate[i].name);
+                if (currentCol.name == this.orderBy) {
+                  elCol.setAttribute('data-sorted', 'true');
+                  elCol.setAttribute('data-sort-direction', this.orderDirection);
+                }
+                var icon = document.createElement('iron-icon');
+                icon.setAttribute('class', 'sort');
+                icon.setAttribute('icon', 'icons:arrow-upward');
+                this.listen(elCol, 'tap', '_handleSort');
+                elCol.appendChild(icon);
+              }
+
+              // title
+              var spanTitle = document.createElement('span');
+              spanTitle.innerText = currentCol.label;
+              elCol.appendChild(spanTitle);
+              this.$$('#headHow').appendChild(elCol);
+            }
+          }
+        },
+
+        /**
+         * Render table content by current data.
+         */
+        _renderTableContent: function() {
+          this.$$('#tableContent').innerHTML = '';
+          for (var i = 0; i < this.data.length; i++) {
+            var currentItem = this.data[i];
+            var elRow = document.createElement('tr');
+            this.listen(elRow, 'tap', '_handleHowTap');
+            for (var j = 0; j < this.dataTemplate.length; j++) {
+              // add checkbox select
+              if (this.selectable === true && j === 0) {
+                var elColFirst = document.createElement('td');
+                elColFirst.setAttribute('class', 'check');
+                var elCheck = document.createElement('paper-checkbox');
+                //elCheck.readOnly = true;
+                elColFirst.appendChild(elCheck);
+                // TODO: remove overlay to prevent click in checkbox
+                var divOverlay = document.createElement('div');
+                divOverlay.setAttribute('class', 'overlay-check');
+                elColFirst.appendChild(divOverlay);
+                elRow.appendChild(elColFirst);
+              }
+              // add current column
+              var currentCol = this.dataTemplate[j];
+              if (currentCol.hidden === false) {
+                var elCol = document.createElement('td');
+                elCol.setAttribute('class', 'cell');
+                elCol.innerText = currentItem[currentCol.name];
+                elRow.appendChild(elCol);
+              }
+            }
+            this.$$('#tableContent').appendChild(elRow);
+          }
+        },
+
+        /**
+         * Component ready state (by lyfe cicle).
+         */
+        ready: function() {
+          this._loadDataTemplate();
+          this._renderTableHead();
+        },
+
+        /**
+         * Set data to fill content.
+         */
+        setData: function(data) {
+          this.isLoading = true;
+          this.data = data;
+          this._renderTableContent();
+          this._renderTableHead();
+          this._onPaginationChange();
+          this.isLoading = false;
+        },
+
+        refresh: function() {
+          this.isLoading = true;
+          var state = this._getCurrentState();
+          // fire event
+          this.fire('datatable-change', state);
+        },
+
+        getSelectedItems: function() {
+          return this._getSelectedItems();
+        },
+
+      });
+
+    </script>
+
+</dom-module>

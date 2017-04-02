@@ -10,6 +10,8 @@ Differential:
 
  * Easy to use
  * Cutumizable header buttons
+ * Sort columns
+ * Pagination
  * Customizable style
  * API integration
 
@@ -47,10 +49,24 @@ Example usage:
     <dsc-column type="string" label="Category" name="category"></dsc-column>
     <dsc-column type="string" label="Created at" name="createdAt" sortable></dsc-column>
   </dsc-columns>
+  <div id="toolBar">
+    <paper-icon-button icon="add" on-click="_handlerNew" title="Add"></paper-icon-button>
+  </div>
+  <div id="toolBarOnOneSelect">
+    <paper-icon-button icon="create" on-click="_handlerEdit" title="Edit"></paper-icon-button>
+  </div>
+  <div id="toolBarOnSelect">
+    <paper-icon-button icon="delete" on-click="_handlerDelete" title="Remove"></paper-icon-button>
+  </div>
 </dsc-polymer-datatable>
 ```
 
 ## API Reference
+
+It is possible to include elements to be displayed in the header by means of ID **toolBar**.
+
+If the elements need to be displayed only when there is a selected row or more, use their IDs **toolBarOnOneSelect** or **toolBarOnSelect**
+
 
 ### Properties
 
@@ -62,19 +78,22 @@ Example usage:
 | pages          | Total number of pages.                                           | null    |
 | page           | Current page number.                                             | null    |
 | total          | Total items in all pages                                         | null    |
+| search         | String to search on API                                          | null    |
 
 ### Methods
 
-| Method           | Description                                      |
-|:-----------------|--------------------------------------------------|
-| **setData**()    | Set array of objects by exitent items.           |
+| Method                 | Description                                      |
+|:-----------------------|--------------------------------------------------|
+| **setData**()          | Set array of objects by exitent items.           |
+| **refresh**()          | Refresh data by current state(page, order, etc) by trigger 'datatable-change' event. |
+| **getSelectedItems**() | Return array of selected objects. Equivalent to event 'datatable-select'             |
 
 ### Events
 
 | Event            | Description                                      |
 |:-----------------|--------------------------------------------------|
-| datatable-change | Event of one or more of the following states: orderBy, orderDirection, page, limit. |
-| datatable-select | On table selection change. Return all selecteds items data.                         |
+| datatable-change | Event of one or more of the following states: orderBy, orderDirection, page, limit or search. |
+| datatable-select | On table selection change. Return all selecteds items data.                                   |
 
 ## Test
 

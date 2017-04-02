@@ -406,8 +406,8 @@
           inputSearch: {
             type: String,
             value: null,
-            notify : true,
-            observer : '_onSearchChanged',
+            notify: true,
+            observer: '_onSearchChanged',
           },
 
           /**
@@ -585,11 +585,11 @@
 
             var firstPageItem = (currentPage - 1) * itemsPerPage + 1;
 
+            var lastPageItem = (firstPageItem + itemsPerPage) - 1;
             if (currentPage === totalPages) {
-              var lastPageItem = totalItems;
-            } else {
-              var lastPageItem = (firstPageItem + itemsPerPage) - 1;
+              lastPageItem = totalItems;
             }
+
             // refresh UI label
             this.$.paginatorLabel.innerText = firstPageItem + ' - ' + lastPageItem + ' of ' + totalItems;
             // manipulate buttons
@@ -612,6 +612,8 @@
 
         /**
          * Get current states.
+         *
+         * @return {Object} Current state object.
          */
         _getCurrentState: function() {
           return {
@@ -625,6 +627,11 @@
           };
         },
 
+        /**
+         * Toggle row selection.
+         *
+         * @param {Object} row Element row target.
+         */
         _toggleRowSelect: function(row) {
           var check = Polymer.dom(row).querySelector('paper-checkbox');
           // toggle checkbox
@@ -639,6 +646,8 @@
 
         /**
          * Toggle checkbox state on row tap.
+         *
+         * @param {object} e Object of event.
          */
         _handleHowTap: function(e) {
           var row = e.currentTarget;
@@ -649,16 +658,18 @@
 
         /**
          * Get array of selected items.
+         *
+         * @return {Array} Array of objects.
          */
         _getSelectedItems: function() {
           var allChecks = Polymer.dom(this.$.tableContent).querySelectorAll('paper-checkbox');
-          var selected = [];
+          var selectedItems = [];
           for (var i = 0; i < allChecks.length; i++) {
             if (allChecks[i].checked === true) {
-              selected.push(this.data[i]);
+              selectedItems.push(this.data[i]);
             }
           }
-          return selected;
+          return selectedItems;
         },
 
         /**
@@ -680,11 +691,12 @@
 
         /**
          * On select all checkbox tap.
+         *
+         * @param {object} e Object of event.
          */
         _handleSelectAll: function(e) {
           var checkAll = e.currentTarget;
           var isCheck = checkAll.checked; // state of check all
-
           var allRows = Polymer.dom(this.$.tableContent).querySelectorAll('tr');
           for (var i = 0; i < allRows.length; i++) {
             if (isCheck === true) {
@@ -700,12 +712,13 @@
         },
 
         /**
-         * Handler of click on header sortable
+         * Handler of click on header sortable.
+         *
+         * @param {object} e Object of event.
          */
         _handleSort: function(e) {
           this.isLoading = true;
           var element = e.currentTarget;
-          var isCurrentSort = (element.getAttribute('data-sorted') === 'true') ? true : false;
           var currentDirection = element.getAttribute('data-sort-direction'); // asc | desc | null
           var newDirection = (currentDirection === null || currentDirection === 'desc') ? 'asc' : 'desc';
           var name = element.getAttribute('data-name');
@@ -721,6 +734,9 @@
 
         /**
          * Observer limit. Change combo value only on firts load.
+         *
+         * @param {Number} newVal New propertie value.
+         * @param {Number} oldVal Old propertie value.
          */
         _onLimitChange: function(newVal, oldVal) {
           if (oldVal === null) {
@@ -754,7 +770,7 @@
          * On checkbox limit per page change.
          */
         _handleChangeLimit: function() {
-          var value = this.$.selectLimit.selectedItem.getAttribute("value");
+          var value = this.$.selectLimit.selectedItem.getAttribute('value');
           if (this.limit !== null && this.limit !== parseInt(value)) {
             this.isLoading = true;
             // manipule state
@@ -784,7 +800,7 @@
               label: label,
               type: type,
               hidden: hidden,
-              sortable: sortable
+              sortable: sortable,
             });
           }
           this.dataTemplate = dataTemplate;
@@ -795,7 +811,6 @@
          */
         _renderTableHead: function() {
           this.$$('#headHow').innerHTML = '';
-          var elRow = document.createElement('tr');
           for (var i = 0; i < this.dataTemplate.length; i++) {
             // add checkbox select
             if (this.selectable === true && i === 0) {
@@ -857,7 +872,6 @@
                 var elColFirst = document.createElement('td');
                 elColFirst.setAttribute('class', 'check');
                 var elCheck = document.createElement('paper-checkbox');
-                //elCheck.readOnly = true;
                 elColFirst.appendChild(elCheck);
                 // TODO: remove overlay to prevent click in checkbox
                 var divOverlay = document.createElement('div');
@@ -888,16 +902,33 @@
 
         /**
          * Set data to fill content.
+         *
+         * @param {Array} data Array of objects to fill data table.
          */
         setData: function(data) {
           this.isLoading = true;
-          this.data = data;
+          filtredData = [];
+          // Filters known fields
+          for (var i = 0; i < data.length; i++) {
+            var currentObj = {};
+            for (var j = 0; j < this.dataTemplate.length; j++) {
+              var name = this.dataTemplate[j].name;
+              if (data[i].hasOwnProperty(name)) {
+                currentObj[name] = data[i][name];
+              }
+            }
+            filtredData.push(currentObj);
+          }
+          this.data = filtredData;
           this._renderTableContent();
           this._renderTableHead();
           this._onPaginationChange();
           this.isLoading = false;
         },
 
+        /**
+         * Refresh data by current state.
+         */
         refresh: function() {
           this.isLoading = true;
           var state = this._getCurrentState();
@@ -905,6 +936,11 @@
           this.fire('datatable-change', state);
         },
 
+        /**
+         * Return selected items.
+         *
+         * @return {Array} Array of objects.
+         */
         getSelectedItems: function() {
           return this._getSelectedItems();
         },

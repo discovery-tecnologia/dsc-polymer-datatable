@@ -19,6 +19,10 @@
         --paper-spinner-color: var(--app-accent-color);
       }
 
+      .horizontal-scroll {
+        overflow-x: auto;
+      }
+
       paper-icon-button {
         color: rgba(0, 0, 0, var(--dark-secondary-opacity));
       }
@@ -34,28 +38,30 @@
         on-response="_onResponse">
     </iron-ajax>
 
-    <dsc-polymer-datatable
-        id="my-component"
-        selectable
-        title="Albums"
-        on-datatable-change="_handlerChange"
-        on-datatable-select="_handlerSelect">
-      <dsc-columns>
-        <dsc-column type="number" label="ID" name="_id" hidden></dsc-column>
-        <dsc-column type="string" label="Title" name="title" sortable></dsc-column>
-        <dsc-column type="string" label="Category" name="category"></dsc-column>
-        <dsc-column type="string" label="Created at" name="createdAt" sortable></dsc-column>
-      </dsc-columns>
-      <div id="toolBar">
-        <paper-icon-button icon="add" on-click="_handlerNew" title="Add"></paper-icon-button>
-      </div>
-      <div id="toolBarOnOneSelect">
-        <paper-icon-button icon="create" on-click="_handlerEdit" title="Edit"></paper-icon-button>
-      </div>
-      <div id="toolBarOnSelect">
-        <paper-icon-button icon="delete" on-click="_handlerDelete" title="Remove"></paper-icon-button>
-      </div>
-    </dsc-polymer-datatable>
+    <div class="horizontal-scroll">
+      <dsc-polymer-datatable
+          id="my-component"
+          selectable
+          title="Albums"
+          on-datatable-change="_handlerChange"
+          on-datatable-select="_handlerSelect">
+        <dsc-columns>
+          <dsc-column type="number" label="ID" name="_id" hidden></dsc-column>
+          <dsc-column type="string" label="Title" name="title" sortable></dsc-column>
+          <dsc-column type="string" label="Category" name="category"></dsc-column>
+          <dsc-column type="string" label="Created at" name="createdAt" sortable></dsc-column>
+        </dsc-columns>
+        <div id="toolBar">
+          <paper-icon-button icon="add" on-click="_handlerNew" title="Add"></paper-icon-button>
+        </div>
+        <div id="toolBarOnOneSelect">
+          <paper-icon-button icon="create" on-click="_handlerEdit" title="Edit"></paper-icon-button>
+        </div>
+        <div id="toolBarOnSelect">
+          <paper-icon-button icon="delete" on-click="_handlerDelete" title="Remove"></paper-icon-button>
+        </div>
+      </dsc-polymer-datatable>
+    </div>
 
   </template>
 
@@ -66,7 +72,7 @@
 
         headers: {
           type: Object,
-          //value: {"Authorization": "Bearer xxxxx.dfsdf.dfgdfg"},
+          // value: {"Authorization": "Bearer xxxxx.dfsdf.dfgdfg"},
           value: {},
         },
 
@@ -74,19 +80,25 @@
 
       /**
        * Transform object in query string paramns.
+       *
+       * @param {Object} obj Object of query strings.
+       *
+       * @return {String} Query string.
        */
       _object2Query: function toQueryString(obj) {
         var parts = [];
         for (var i in obj) {
           if (obj.hasOwnProperty(i)) {
-            parts.push(encodeURIComponent(i) + "=" + encodeURIComponent(obj[i]));
+            parts.push(encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]));
           }
         }
-        return parts.join("&");
+        return parts.join('&');
       },
 
       /**
-       * On table change(page, order or search)
+       * On table change(page, order or search).
+       *
+       * @param {object} e Object of event.
        */
       _handlerChange: function(e) {
         console.log('_handlerChange');
@@ -103,11 +115,17 @@
       },
 
       /**
-       * On select / deselect row
+       * On select / deselect row.
+       *
+       * @param {object} e Object of event.
        */
       _handlerSelect: function(e) {
         console.log('_handlerSelect');
         console.log(e.detail);
+      },
+
+      _handlerNew: function(e) {
+        alert('New item event');
       },
 
       _handlerDelete: function(e) {
@@ -117,7 +135,13 @@
         console.log(selectedItems);
       },
 
-      // set exitent data
+      _handlerEdit: function(e) {
+        var dataTable = this.$$('#my-component');
+        var selectedItems = dataTable.getSelectedItems();
+        console.log('EDIT');
+        console.log(selectedItems);
+      },
+
       _onResponse: function(response) {
         var data = response.detail.response;
         console.log(data);
@@ -131,14 +155,24 @@
         dataTable.setData(data.docs);
       },
 
+      /**
+       * Send XHR request.
+       *
+       * @param {String} query String URL paramns.
+       */
       xhrRequest: function(query) {
         query = query || '';
-        if (query != '') {query = '?' + query}
+        if (query != '') {
+          query = '?' + query;
+        }
         var xhr = this.$.xhr;
         xhr.url = 'http://localhost:8100/album' + query;
         xhr.generateRequest();
       },
 
+      /**
+       * On component ready.
+       */
       ready: function() {
         this.xhrRequest();
       },

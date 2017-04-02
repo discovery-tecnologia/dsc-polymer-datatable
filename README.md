@@ -9,7 +9,7 @@ A material design implementation of a data table. Easy API integration.
 Differential:
 
  * Easy to use
- * Cutumizable header buttons
+ * Customizable header buttons
  * Sort columns
  * Pagination
  * Customizable style

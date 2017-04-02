@@ -2,7 +2,7 @@
 <link rel="import" href="../../iron-ajax/iron-ajax.html">
 <link rel="import" href="../dsc-polymer-datatable.html">
 
-<dom-module id="dsc-polymer-datatable-basic">
+<dom-module id="dsc-polymer-datatable-api">
   <template>
     <style>
       :host {
@@ -42,14 +42,14 @@
       <dsc-polymer-datatable
           id="my-component"
           selectable
-          title="Users"
+          title="Albums"
           on-datatable-change="_handlerChange"
           on-datatable-select="_handlerSelect">
         <dsc-columns>
-          <dsc-column type="number" label="ID" name="id" hidden></dsc-column>
-          <dsc-column type="string" label="Name" name="name" sortable></dsc-column>
-          <dsc-column type="string" label="Age" name="age"></dsc-column>
-          <dsc-column type="string" label="Date" name="date" sortable></dsc-column>
+          <dsc-column type="number" label="ID" name="_id" hidden></dsc-column>
+          <dsc-column type="string" label="Title" name="title" sortable></dsc-column>
+          <dsc-column type="string" label="Category" name="category"></dsc-column>
+          <dsc-column type="string" label="Created at" name="createdAt" sortable></dsc-column>
         </dsc-columns>
         <div id="toolBar">
           <paper-icon-button icon="add" on-click="_handlerNew" title="Add"></paper-icon-button>
@@ -67,7 +67,7 @@
 
   <script>
     Polymer({
-      is: 'dsc-polymer-datatable-basic',
+      is: 'dsc-polymer-datatable-api',
       properties: {
 
         headers: {
@@ -144,15 +144,15 @@
 
       _onResponse: function(response) {
         var data = response.detail.response;
-        console.log('DATA: ', data);
+        console.log(data);
         var dataTable = this.$$('#my-component');
-        dataTable.limit = 10;
-        dataTable.orderBy = 'name';
-        dataTable.orderDirection = 'asc';
-        dataTable.pages = 2;
-        dataTable.page = 1;
-        dataTable.total = 12;
-        dataTable.setData(data);
+        dataTable.limit = data.limit;
+        dataTable.orderBy = data.orderBy;
+        dataTable.orderDirection = data.orderDirection;
+        dataTable.pages = data.pages;
+        dataTable.page = data.page;
+        dataTable.total = data.total;
+        dataTable.setData(data.docs);
       },
 
       /**
@@ -166,7 +166,7 @@
           query = '?' + query;
         }
         var xhr = this.$.xhr;
-        xhr.url = 'api-example.json' + query;
+        xhr.url = 'http://localhost:8100/album' + query;
         xhr.generateRequest();
       },
 

@@ -591,21 +591,30 @@
             }
 
             // refresh UI label
-            this.$.paginatorLabel.innerText = firstPageItem + ' - ' + lastPageItem + ' of ' + totalItems;
+            // this.$.paginatorLabel.innerText = firstPageItem + ' - ' + lastPageItem + ' of ' + totalItems;
+            Polymer.dom(this.$.paginatorLabel).innerText = firstPageItem + ' - ' + lastPageItem + ' of ' + totalItems;
             // manipulate buttons
             if (this.page === 1) {
-              this.$.btFirstPage.setAttribute('disabled', '');
-              this.$.btPreviousPage.setAttribute('disabled', '');
+              // this.$.btFirstPage.setAttribute('disabled', '');
+              Polymer.dom(this.$.btFirstPage).setAttribute('disabled', '');
+              // this.$.btPreviousPage.setAttribute('disabled', '');
+              Polymer.dom(this.$.btPreviousPage).setAttribute('disabled', '');
             } else {
-              this.$.btFirstPage.removeAttribute('disabled', '');
-              this.$.btPreviousPage.removeAttribute('disabled', '');
+              // this.$.btFirstPage.removeAttribute('disabled', '');
+              Polymer.dom(this.$.btFirstPage).removeAttribute('disabled', '');
+              // this.$.btPreviousPage.removeAttribute('disabled', '');
+              Polymer.dom(this.$.btPreviousPage).removeAttribute('disabled', '');
             }
             if (this.page === this.pages) {
-              this.$.btLastPage.setAttribute('disabled', '');
-              this.$.btNextPage.setAttribute('disabled', '');
+              // this.$.btLastPage.setAttribute('disabled', '');
+              Polymer.dom(this.$.btLastPage).setAttribute('disabled', '');
+              // this.$.btNextPage.setAttribute('disabled', '');
+              Polymer.dom(this.$.btNextPage).setAttribute('disabled', '');
             } else {
-              this.$.btLastPage.removeAttribute('disabled', '');
-              this.$.btNextPage.removeAttribute('disabled', '');
+              // this.$.btLastPage.removeAttribute('disabled', '');
+              Polymer.dom(this.$.btLastPage).removeAttribute('disabled', '');
+              // this.$.btNextPage.removeAttribute('disabled', '');
+              Polymer.dom(this.$.btNextPage).removeAttribute('disabled', '');
             }
           }
         },
@@ -638,9 +647,11 @@
           check.checked = ! check.checked;
           // toggle row selection
           if (row.getAttribute('data-selected') == '') {
-            row.removeAttribute('data-selected');
+            // row.removeAttribute('data-selected');
+            Polymer.dom(row).removeAttribute('data-selected');
           } else {
-            row.setAttribute('data-selected', '');
+            // row.setAttribute('data-selected', '');
+            Polymer.dom(row).setAttribute('data-selected', '');
           }
         },
 
@@ -681,9 +692,11 @@
           // set partial selection on check all
           var partialSelection = Polymer.dom(this.root).querySelector('.partialSelection');
           if (this.selectedCount > 0) {
-            partialSelection.setAttribute('data-checked', '');
+            // partialSelection.setAttribute('data-checked', '');
+            Polymer.dom(partialSelection).setAttribute('data-checked', '');
           } else {
-            partialSelection.removeAttribute('data-checked');
+            // partialSelection.removeAttribute('data-checked');
+            Polymer.dom(partialSelection).removeAttribute('data-checked');
           }
           // emmit event
           this.fire('datatable-select', selected);
@@ -810,7 +823,8 @@
          * Render table head by dsc-columns elements in content.
          */
         _renderTableHead: function() {
-          this.$$('#headHow').innerHTML = '';
+          // this.$$('#headHow').innerHTML = '';
+          Polymer.dom(this.$$('#headHow')).innerHTML = '';
           for (var i = 0; i < this.dataTemplate.length; i++) {
             // add checkbox select
             if (this.selectable === true && i === 0) {
@@ -828,7 +842,8 @@
               divPartialSelectionContainer.appendChild(divPartialSelection);
               divPartialSelectionContainer.appendChild(elCheck);
               elColFirst.appendChild(divPartialSelectionContainer);
-              this.$$('#headHow').appendChild(elColFirst);
+              // this.$$('#headHow').appendChild(elColFirst);
+              Polymer.dom(this.$$('#headHow')).appendChild(elColFirst);
             }
             // add current column
             var currentCol = this.dataTemplate[i];
@@ -852,7 +867,10 @@
               var spanTitle = document.createElement('span');
               spanTitle.innerText = currentCol.label;
               elCol.appendChild(spanTitle);
-              this.$$('#headHow').appendChild(elCol);
+              // this.$$('#headHow').appendChild(elCol);
+              Polymer.dom(this.$$('#headHow')).appendChild(elCol);
+              // Polymer.dom.flush()
+              // Polymer.updateStyles();
             }
           }
         },
@@ -861,7 +879,8 @@
          * Render table content by current data.
          */
         _renderTableContent: function() {
-          this.$$('#tableContent').innerHTML = '';
+          // this.$$('#tableContent').innerHTML = '';
+          Polymer.dom(this.$$('#tableContent')).innerHTML = '';
           for (var i = 0; i < this.data.length; i++) {
             var currentItem = this.data[i];
             var elRow = document.createElement('tr');
@@ -888,7 +907,10 @@
                 elRow.appendChild(elCol);
               }
             }
-            this.$$('#tableContent').appendChild(elRow);
+            // this.$$('#tableContent').appendChild(elRow);
+            Polymer.dom(this.$$('#tableContent')).appendChild(elRow);
+            // Polymer.dom.flush();
+            // Polymer.updateStyles();
           }
         },
 
@@ -898,6 +920,8 @@
         ready: function() {
           this._loadDataTemplate();
           this._renderTableHead();
+          Polymer.dom.flush();
+          Polymer.updateStyles();
         },
 
         /**
@@ -906,8 +930,9 @@
          * @param {Array} data Array of objects to fill data table.
          */
         setData: function(data) {
+          this._resetSelection();
           this.isLoading = true;
-          filtredData = [];
+          var filtredData = [];
           // Filters known fields
           for (var i = 0; i < data.length; i++) {
             var currentObj = {};

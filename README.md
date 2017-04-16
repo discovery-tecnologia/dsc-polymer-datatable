@@ -82,11 +82,12 @@ If the elements need to be displayed only when there is a selected row or more, 
 
 ### Methods
 
-| Method                 | Description                                      |
-|:-----------------------|--------------------------------------------------|
-| **setData**()          | Set array of objects by exitent items.           |
-| **refresh**()          | Refresh data by current state(page, order, etc) by trigger 'datatable-change' event. |
-| **getSelectedItems**() | Return array of selected objects. Equivalent to event 'datatable-select'             |
+| Method                 | Description                                      | param |
+|:-----------------------|--------------------------------------------------|-------|
+| **setLoading**(bool)   | Allows you to externally manipulate the loading status. For internal states the component already has the loading | Boolean |
+| **setData**(data)      | Set array of objects by exitent items.           | Object |
+| **refresh**()          | Refresh data by current state(page, order, etc) by trigger 'datatable-change' event. | - |
+| **getSelectedItems**() | Return array of selected objects. Equivalent to event 'datatable-select'             | - |
 
 ### Events
 

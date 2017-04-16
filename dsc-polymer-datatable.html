@@ -925,6 +925,16 @@
         },
 
         /**
+         * Allows you to externally manipulate the loading status. For internal
+         * states the component already has the loading.
+         *
+         * @param {Boolean} bool Array of objects to fill data table.
+         */
+        setLoading: function(bool) {
+          this.isLoading = bool;
+        },
+
+        /**
          * Set data to fill content.
          *
          * @param {Array} data Array of objects to fill data table.
